@@ -824,7 +824,6 @@ class Twitter_timeline {
 		------------------
 		CHANGELOG:
 		------------------		
-		Version 1.4.5 - Added support for new twitter entity: media. Added default case for entities.
 		Version 1.4.4 - Fixed a bug where error handling broke and caused PHP errors due to incorrectly formatted error responses from the Twitter API.
 		Version 1.4.3 - Added curly brace encoding to fix some odd parsing behavior
 		Version 1.4.2 - Fixed a bug in caching.
