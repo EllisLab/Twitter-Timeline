@@ -27,7 +27,7 @@ in this Software without prior written authorization from EllisLab, Inc.
 
 $plugin_info = array(
 						'pi_name'			=> 'Twitter Timeline',
-						'pi_version'		=> '1.4.4',
+						'pi_version'		=> '1.4.5',
 						'pi_author'			=> 'ExpressionEngine Dev Team',
 						'pi_author_url'		=> 'http://expressionengine.com/',
 						'pi_description'	=> 'Allows you to display information from Twitter timelines',
@@ -169,7 +169,7 @@ class Twitter_timeline {
 				
 				foreach ($val['entities'] as $type => $found)
 				{
-					if ( ! $this->entities[$type])
+					if ( ! isset($this->entities[$type]) OR ! $this->entities[$type])
 					{
 						continue;
 					}
@@ -824,6 +824,7 @@ class Twitter_timeline {
 		------------------
 		CHANGELOG:
 		------------------		
+		Version 1.4.5 - Fixed a PHP error that could occur when unknown entities are encountered and added parsing of the media entity url.
 		Version 1.4.4 - Fixed a bug where error handling broke and caused PHP errors due to incorrectly formatted error responses from the Twitter API.
 		Version 1.4.3 - Added curly brace encoding to fix some odd parsing behavior
 		Version 1.4.2 - Fixed a bug in caching.
