@@ -27,7 +27,7 @@ in this Software without prior written authorization from EllisLab, Inc.
 
 $plugin_info = array(
 						'pi_name'			=> 'Twitter Timeline',
-						'pi_version'		=> '1.4.4',
+						'pi_version'		=> '1.4.5',
 						'pi_author'			=> 'ExpressionEngine Dev Team',
 						'pi_author_url'		=> 'http://expressionengine.com/',
 						'pi_description'	=> 'Allows you to display information from Twitter timelines',
@@ -54,7 +54,7 @@ class Twitter_timeline {
 	var $limit			= 20;
 	var $parameters		= array();
 	var $months			= array('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec');
-	var $entities		= array('user_mentions' => FALSE, 'urls' => FALSE, 'hashtags' => FALSE);
+	var $entities		= array('user_mentions' => FALSE, 'urls' => FALSE, 'hashtags' => FALSE, 'media' => FALSE);
 	var $use_stale;
 	
 	/**
@@ -75,7 +75,7 @@ class Twitter_timeline {
 		$screen_name		= $this->EE->TMPL->fetch_param('screen_name');
 		$create_links		= $this->EE->TMPL->fetch_param('create_links', '');
 		
-		// create_links="user_mentions|hashtags|urls"
+		// create_links="user_mentions|hashtags|urls|media"
 		
 		$create_links = explode('|', $create_links);
 		
@@ -87,7 +87,6 @@ class Twitter_timeline {
 				$this->parameters['include_entities'] = 'true';
 			}
 		}
-
 		
 		// timeline type
 
@@ -130,7 +129,6 @@ class Twitter_timeline {
 			return;
 		}
 
-
 		// Some variables needed for the parsing process
 		
 		$count		= 0;
@@ -171,13 +169,13 @@ class Twitter_timeline {
 				
 				foreach ($val['entities'] as $type => $found)
 				{
-					if ( ! $this->entities[$type])
+					if ( ! isset($this->entities[$type]) OR ! $this->entities[$type])
 					{
 						continue;
 					}
 					
 					foreach ($found as $info)
-					{
+					{	
 						switch($type)
 						{
 							case 'user_mentions':	$find[]		= '@'.$info['screen_name'];
@@ -188,6 +186,12 @@ class Twitter_timeline {
 								break;
 							case 'urls':			$find[]		= $info['url'];
 													$replace[]	= "<a title='{$info['expanded_url']}' href='{$info['url']}'>{$info['url']}</a>";
+								break;
+							case 'media':			$find[]		= $info['url'];
+													$replace[]	= "<a title='{$info['expanded_url']}' href='{$info['url']}'>{$info['url']}</a>";
+								break;
+							default:
+								break;
 						}
 					}
 				}
@@ -507,7 +511,7 @@ class Twitter_timeline {
 	/**
 	 * Parse Entities
 	 *
-	 * Twitter sends links, usernames, or hashtags to link up, but the format
+	 * Twitter sends links, media, usernames, or hashtags to link up, but the format
 	 * is a little funny. Here we just makes sure everything we need is in our
 	 * final status array.
 	 *
@@ -538,7 +542,6 @@ class Twitter_timeline {
 				$entities[$entity_types->tag][] = $ent;
 			}
 		}
-		
 		return $entities;
 	}
 
@@ -783,8 +786,8 @@ class Twitter_timeline {
 		twitter_refresh="20"
 		- Time (in minutes) of cache interval for the requested Twitter timeline.  Defaults to 15.
 		
-		create_links="user_mentions|hashtags|urls"
-		- Turn mentions (@username), hashtags (#hashtag), or urls (http://example.com) into relevant links.
+		create_links="user_mentions|hashtags|urls|media"
+		- Turn mentions (@username), hashtags (#hashtag), media (images or video links such as: http://t.co/id) or other urls (http://example.com) into relevant links.
 		
 		use_stale_cache="no"
 		- Show blank data if the cache is stale and the Twitter api could not be reached.
@@ -821,7 +824,7 @@ class Twitter_timeline {
 		------------------
 		CHANGELOG:
 		------------------		
-		
+		Version 1.4.5 - Fixed a PHP error that could occur when unknown entities are encountered and added parsing of the media entity url.
 		Version 1.4.4 - Fixed a bug where error handling broke and caused PHP errors due to incorrectly formatted error responses from the Twitter API.
 		Version 1.4.3 - Added curly brace encoding to fix some odd parsing behavior
 		Version 1.4.2 - Fixed a bug in caching.
