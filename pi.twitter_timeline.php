@@ -1,7 +1,7 @@
 <?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 /*
-Copyright (C) 2007 - 2011 EllisLab, Inc.
+Copyright (C) 2007 - 2012 EllisLab, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@ in this Software without prior written authorization from EllisLab, Inc.
 
 $plugin_info = array(
 						'pi_name'			=> 'Twitter Timeline',
-						'pi_version'		=> '1.4.5',
+						'pi_version'		=> '1.4.6',
 						'pi_author'			=> 'ExpressionEngine Dev Team',
 						'pi_author_url'		=> 'http://expressionengine.com/',
 						'pi_description'	=> 'Allows you to display information from Twitter timelines',
@@ -40,7 +40,7 @@ $plugin_info = array(
  * @package			ExpressionEngine
  * @category		Plugin
  * @author			ExpressionEngine Dev Team
- * @copyright		Copyright (c) 2007 - 2011, EllisLab, Inc.
+ * @copyright		Copyright (c) 2007 - 2012, EllisLab, Inc.
  * @link			http://expressionengine.com/downloads/details/twitter_timeline/
  */
 class Twitter_timeline {
@@ -56,6 +56,7 @@ class Twitter_timeline {
 	var $months			= array('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec');
 	var $entities		= array('user_mentions' => FALSE, 'urls' => FALSE, 'hashtags' => FALSE, 'media' => FALSE);
 	var $use_stale;
+	var $time_limit		= 5;  // Max time in seconds to allow curl/fsockopen connection.
 	
 	/**
 	 * Constructor
@@ -666,6 +667,9 @@ class Twitter_timeline {
 		curl_setopt($ch, CURLOPT_URL, $url); 
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, 1);
+
+		// The maximum number of seconds to allow cURL functions to execute. 
+		curl_setopt($ch, CURLOPT_TIMEOUT, $this->time_limit);
 		
 		$data = curl_exec($ch);
 		
@@ -691,7 +695,7 @@ class Twitter_timeline {
 
 		$data = '';
 
-		$fp = fsockopen($target['host'], 80, $error_num, $error_str, 8); 
+		$fp = fsockopen($target['host'], 80, $error_num, $error_str, $this->time_limit); 
 
 		if (is_resource($fp))
 		{
@@ -791,6 +795,9 @@ class Twitter_timeline {
 		
 		use_stale_cache="no"
 		- Show blank data if the cache is stale and the Twitter api could not be reached.
+
+		time_limit="5"
+		- The maximum time (in seconds) allowed for attempting to connect to Twitter.  Defaults to 5.
 		
 		------------------
 		VARIABLES:
@@ -824,6 +831,7 @@ class Twitter_timeline {
 		------------------
 		CHANGELOG:
 		------------------		
+		Version 1.4.6 - Added a time_limit parameter to specify max seconds allowed when trying to connect to Twitter.
 		Version 1.4.5 - Fixed a PHP error that could occur when unknown entities are encountered and added parsing of the media entity url.
 		Version 1.4.4 - Fixed a bug where error handling broke and caused PHP errors due to incorrectly formatted error responses from the Twitter API.
 		Version 1.4.3 - Added curly brace encoding to fix some odd parsing behavior
