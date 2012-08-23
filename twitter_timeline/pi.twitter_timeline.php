@@ -27,7 +27,7 @@ in this Software without prior written authorization from EllisLab, Inc.
 
 $plugin_info = array(
 						'pi_name'			=> 'Twitter Timeline',
-						'pi_version'		=> '1.4.6',
+						'pi_version'		=> '1.4.7',
 						'pi_author'			=> 'ExpressionEngine Dev Team',
 						'pi_author_url'		=> 'http://expressionengine.com/',
 						'pi_description'	=> 'Allows you to display information from Twitter timelines',
@@ -212,6 +212,11 @@ class Twitter_timeline {
 			
 			$val['text'] = $this->EE->security->xss_clean($val['text']);
 			$val['text'] = $this->EE->functions->encode_ee_tags($val['text'], TRUE);
+			
+			// XSS cleaning will convert the hash entity in the hashtag link to a literal,
+			// we need to put it back
+			
+			$val['text'] = str_replace('search?q=#', 'search?q=%23', $val['text']);
 			
 			// Prep conditionals
 			
