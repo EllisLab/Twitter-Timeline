@@ -27,7 +27,7 @@ in this Software without prior written authorization from EllisLab, Inc.
 
 $plugin_info = array(
 						'pi_name'			=> 'Twitter Timeline',
-						'pi_version'		=> '1.4.7',
+						'pi_version'		=> '1.4.8',
 						'pi_author'			=> 'ExpressionEngine Dev Team',
 						'pi_author_url'		=> 'http://expressionengine.com/',
 						'pi_description'	=> 'Allows you to display information from Twitter timelines',
@@ -213,6 +213,7 @@ class Twitter_timeline {
 			$val['text'] = $this->EE->security->xss_clean($val['text']);
 			$val['text'] = $this->EE->functions->encode_ee_tags($val['text'], TRUE);
 			
+			
 			// XSS cleaning will convert the hash entity in the hashtag link to a literal,
 			// we need to put it back
 			
@@ -288,7 +289,7 @@ class Twitter_timeline {
 					$human_time	= $this->_parse_twitter_date($statuses[$key]['created_at']);
 					
 					$date		= $this->EE->localize->set_server_time($this->EE->localize->convert_human_date_to_gmt($human_time));
-					$tagdata	= $this->EE->TMPL->swap_var_single($var_key, $this->EE->localize->format_timespan($this->EE->localize->now - $date), $tagdata);
+					$tagdata	= $this->EE->TMPL->swap_var_single($var_key, $this->_get_retative_date($date), $tagdata);
 				}
 				
 				
@@ -310,6 +311,47 @@ class Twitter_timeline {
 			
 			$this->return_data .= $tagdata;
 		}
+	}
+	
+	// --------------------------------------------------------------------
+	
+	/**
+	 * Returns a fuzzy relative date based on the tweet date
+	 *
+	 * @access	public
+	 * @param	int
+	 * @return	string
+	 */
+	private function _get_retative_date($date)
+	{
+		$this->EE->load->helper('inflector_helper');
+		
+		$diff = time() - $date;
+		
+		// Units and numbers we divide time by to get them
+		$units = array(
+			'second'	=> 60,
+			'minute'	=> 60,
+			'hour'		=> 24,
+			'day'		=> 7,
+			'week'		=> 4,
+			'month'		=> 12,
+			'year'		=> 0
+		);
+		
+		// Get the highest unit this tweet is in
+		foreach ($units as $unit => $value)
+		{
+			if ($diff < $value OR $unit == 'year')
+			{
+				return $diff . ' ' . $this->EE->lang->line(($diff > 1) ? plural($unit) : $unit);
+			}
+			
+			// Diff isn't small enough yet, divide it by the current value
+			$diff = round($diff / $value);
+		}
+		
+		return FALSE;
 	}
 	
 	// --------------------------------------------------------------------
@@ -835,7 +877,9 @@ class Twitter_timeline {
 		
 		------------------
 		CHANGELOG:
-		------------------		
+		------------------
+		Version 1.4.8 - Made {status_relative_date} fuzzy for more Twitter-like relative dates.
+		Version 1.4.7 - Fixed a bug (#5) where hashtag links would be broken due to XSS cleaning.
 		Version 1.4.6 - Added a time_limit parameter to specify max seconds allowed when trying to connect to Twitter.
 		Version 1.4.5 - Fixed a PHP error that could occur when unknown entities are encountered and added parsing of the media entity url.
 		Version 1.4.4 - Fixed a bug where error handling broke and caused PHP errors due to incorrectly formatted error responses from the Twitter API.
