@@ -27,7 +27,7 @@ in this Software without prior written authorization from EllisLab, Inc.
 
 $plugin_info = array(
 						'pi_name'			=> 'Twitter Timeline',
-						'pi_version'		=> '1.4.8',
+						'pi_version'		=> '1.4.9',
 						'pi_author'			=> 'ExpressionEngine Dev Team',
 						'pi_author_url'		=> 'http://expressionengine.com/',
 						'pi_description'	=> 'Allows you to display information from Twitter timelines',
@@ -75,6 +75,7 @@ class Twitter_timeline {
 		$this->use_stale	= $this->EE->TMPL->fetch_param('use_stale_cache', 'yes');
 		$screen_name		= $this->EE->TMPL->fetch_param('screen_name');
 		$create_links		= $this->EE->TMPL->fetch_param('create_links', '');
+		$link_target    	= $this->EE->TMPL->fetch_param('link_target', '');
 		
 		// create_links="user_mentions|hashtags|urls|media"
 		
@@ -180,16 +181,16 @@ class Twitter_timeline {
 						switch($type)
 						{
 							case 'user_mentions':	$find[]		= '@'.$info['screen_name'];
-													$replace[]	= "<a title='{$info['name']}' href='http://twitter.com/{$info['screen_name']}'>@{$info['screen_name']}</a>";
+													$replace[]	= "<a target='".$link_target."' title='{$info['name']}' href='http://twitter.com/{$info['screen_name']}'>@{$info['screen_name']}</a>";
 								break;
 							case 'hashtags':		$find[]		= '#'.$info['text'];
-													$replace[]	= "<a title='Search for {$info['text']}' href='http://twitter.com/search?q=%23{$info['text']}'>#{$info['text']}</a>";
+													$replace[]	= "<a target='".$link_target."' title='Search for {$info['text']}' href='http://twitter.com/search?q=%23{$info['text']}'>#{$info['text']}</a>";
 								break;
 							case 'urls':			$find[]		= $info['url'];
-													$replace[]	= "<a title='{$info['expanded_url']}' href='{$info['url']}'>{$info['url']}</a>";
+													$replace[]	= "<a target='".$link_target."' title='{$info['expanded_url']}' href='{$info['url']}'>{$info['url']}</a>";
 								break;
 							case 'media':			$find[]		= $info['url'];
-													$replace[]	= "<a title='{$info['expanded_url']}' href='{$info['url']}'>{$info['url']}</a>";
+													$replace[]	= "<a target='".$link_target."' title='{$info['expanded_url']}' href='{$info['url']}'>{$info['url']}</a>";
 								break;
 							default:
 								break;
@@ -845,6 +846,9 @@ class Twitter_timeline {
 
 		time_limit="5"
 		- The maximum time (in seconds) allowed for attempting to connect to Twitter.  Defaults to 5.
+
+		link_target="_blank"
+		- What will be the target of the links in the tweet. This can be "_blank", "_self", "_parent", "_top" or "[framename]". This is the default target="" attribute of the link tag.  Defaults to empty.
 		
 		------------------
 		VARIABLES:
@@ -878,6 +882,7 @@ class Twitter_timeline {
 		------------------
 		CHANGELOG:
 		------------------
+		Version 1.4.9 - Add target attributes on the links in tweets.
 		Version 1.4.8 - Made {status_relative_date} fuzzy for more Twitter-like relative dates.
 		Version 1.4.7 - Fixed a bug (#5) where hashtag links would be broken due to XSS cleaning.
 		Version 1.4.6 - Added a time_limit parameter to specify max seconds allowed when trying to connect to Twitter.
